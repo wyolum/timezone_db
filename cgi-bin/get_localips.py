@@ -5,6 +5,7 @@ import os
 import urllib
 import timezone_db
 import sqlite3
+import time
 import cgitb
 cgitb.enable()
 
@@ -22,8 +23,13 @@ except:
   ip = "1.2.3.4"
 
 def get_localips():
-    cur = db.execute('SELECT localip, dev_type FROM IP_Timezone WHERE ip="%s" and localip != "NA" order by localip' % ip)
-    return [{"localip":l.decode('utf-8'), 'dev_type':t.decode('utf-8')} for l,t in cur.fetchall()]
+  sql = '''
+  SELECT localip, dev_type 
+  FROM IP_Timezone  
+  WHERE ip="%s" AND localip != "NA" AND last_update > %s 
+  ORDER BY localip''' % (ip, int(time.time() - 1 * 86400))
+  cur = db.execute(sql)
+  return [{"localip":l.decode('utf-8'), 'dev_type':t.decode('utf-8')} for l,t in cur.fetchall()]
 
 print ("Content-type: text/json\n\n")
 

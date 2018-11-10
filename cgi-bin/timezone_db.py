@@ -121,10 +121,13 @@ def update(ip, localip, macaddress, dev_type, json_data):
         j['utc_offset'] = new_tz['utc_offset']
         j['localip'] = localip
         ### update calleres count... update all records with same ip.
-        sql1 = 'UPDATE IP_Timezone SET last_update="%s", utc_offset="%s" WHERE ip="%s"' % (j['last_update'], j['utc_offset'], j['ip'])
-        sql2 = 'UPDATE IP_Timezone SET count=count+1 WHERE ip="%s" AND localip="%s"' % (j['ip'], j['localip'])
-        db.execute(sql1)
-        db.execute(sql2)
+        sql = '''\
+UPDATE IP_Timezone 
+SET 
+    count=count+1,last_update="%s",localip="%s", utc_offset="%s" 
+WHERE 
+    ip="%s" AND macaddress="%s"''' % (j['last_update'], j['localip'], j['utc_offset'], j['ip'], j['macaddress'])
+        db.execute(sql)
     else: ## still fresh, only update count
         sql = 'UPDATE IP_Timezone SET count=count+1 WHERE ip="%s"' % j['ip']
         db.execute(sql)
