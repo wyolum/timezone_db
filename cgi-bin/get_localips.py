@@ -27,7 +27,7 @@ def get_localips():
   SELECT localip, dev_type 
   FROM IP_Timezone  
   WHERE ip="%s" AND localip != "NA" AND last_update > %s 
-  ORDER BY localip''' % (ip, int(time.time() - 1 * 86400))
+  ORDER BY localip''' % (ip, int(time.time() - 8 * 86400))
   cur = db.execute(sql)
   return [{"localip":l.decode('utf-8'), 'dev_type':t.decode('utf-8')} for l,t in cur.fetchall()]
 
