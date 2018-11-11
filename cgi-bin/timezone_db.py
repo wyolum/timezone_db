@@ -182,12 +182,12 @@ UPDATE Timezone
 SET 
     tz_count=tz_count+1,last_update="%s",localip="%s", utc_offset="%s" 
 WHERE 
-    ip="%s" AND macaddress="%s"''' % (j['last_update'], j['localip'], j['utc_offset'], j['ip'], j['macaddress'])
+    rowid = %d''' % (j['last_update'], j['localip'], j['utc_offset'], j['timezone_rowid'])
         db.execute(sql)
     else: ## still fresh, only update count and localip
         sql = 'UPDATE Timezone SET tz_count=tz_count+1 WHERE Timezone.rowid=%d' % j['timezone_rowid']
         db.execute(sql)
-        sql = 'UPDATE Device SET count=count+1, localip="%s" WHERE ip="%s"' % (j['ip'], localip)
+        sql = 'UPDATE Device SET count=count+1, localip="%s" WHERE ip="%s" AND macaddress="%s"' % (localip, j['ip'], j['macaddress'])
         db.execute(sql)
     # print(sql)
     db.commit()
