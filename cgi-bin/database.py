@@ -7,10 +7,13 @@ class Table:
         self.name = name
         self.columns = columns
         self.db = db
-    def create(self):
+    def create(self, print_only=False):
         cols = ['%s' % col for col in self.columns]
         sql = 'CREATE TABLE IF NOT EXISTS %s (%s);' % (self.name, ','.join(cols))
-        self.db.execute(sql)
+        if print_only:
+            print(sql)
+        else:
+            self.db.execute(sql)
     def drop(self):
         sql = 'DROP TABLE %s' % self.name
         response = input('Warning, dropping table %s\nY to confirm: ' % self.name)
@@ -20,10 +23,11 @@ class Table:
         else:
             print ('Drop not executed')
     def create_index(self, colnames, unique=False):
-        idx_name = ''.join(colnames)
+        idx_name = ''.join(colnames) + 'idx'
         cols = ','.join(colnames)
         unique = ['', 'UNIQUE'][unique]
         sql = 'CREATE %s INDEX %s ON %s(%s)' % (unique, idx_name, self.name, cols)
+
         self.db.execute(sql)
     def insert(self, values):
         place_holders = ','.join('?' * len(values[0]))

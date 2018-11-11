@@ -30,7 +30,7 @@ else:
   dev_type = 'Not given'
 
 tz = timezone_db.select(ip, localip, macaddress, dev_type)
-print ("tz:", tz)
+
 def format_utc_offset(x):
     '''add "+" back into utc_offset'''
     if type(x) == type(0):
