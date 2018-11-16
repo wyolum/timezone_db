@@ -92,7 +92,6 @@ INNER JOIN
 WHERE
   Device.ip="%s" AND Device.macaddress="%s"
 ''' % (columns, ip, macaddress)
-
     cur = db.execute(sql)
     rows = cur.fetchall()
     rowcount = len(rows)
@@ -172,23 +171,22 @@ def update(ip, localip, macaddress, dev_type, json_data):
     sunday = today - timedelta(days=wkday + 1, hours=today.hour, minutes=today.minute, seconds=today.second) + timedelta(hours=3)
     newest = int(time.mktime(sunday.timetuple()))
 
-    if j['last_update'] < newest: ## refresh timezone offset and access count
+    if j['last_update'] < newest: ## refresh timezone offset
         new_tz = lookup(ip, localip, macaddress, dev_type)
         j['last_update'] = new_tz['last_update']
         j['utc_offset'] = new_tz['utc_offset']
-        ### update calleres count... update all records with same ip.
-        sql = '''\
+    sql = '''\
 UPDATE Timezone 
-SET 
-    tz_count=tz_count+1,last_update="%s",localip="%s", utc_offset="%s" 
-WHERE 
-    rowid = %d''' % (j['last_update'], j['localip'], j['utc_offset'], j['timezone_rowid'])
-        db.execute(sql)
-    else: ## still fresh, only update count and localip
-        sql = 'UPDATE Timezone SET tz_count=tz_count+1 WHERE Timezone.rowid=%d' % j['timezone_rowid']
-        db.execute(sql)
-        sql = 'UPDATE Device SET count=count+1, localip="%s" WHERE ip="%s" AND macaddress="%s"' % (localip, j['ip'], j['macaddress'])
-        db.execute(sql)
+SET tz_count=tz_count+1, last_update=%s, utc_offset="%s"
+WHERE Timezone.rowid=%d''' % (j['last_update'], j['utc_offset'], j['timezone_rowid'])
+    db.execute(sql)
+    
+    sql = '''\
+UPDATE Device 
+SET count=count+1, localip="%s", dev_type="%s", latitude=%.4f, longitude=%.4f, city="%s", region="%s", country_name="%s"
+WHERE ip="%s" AND macaddress="%s"
+''' % (localip, dev_type, j['latitude'], j['longitude'], j['city'], j['region'], j['country_name'], j['ip'], j['macaddress'])
+    db.execute(sql)
     # print(sql)
     db.commit()
     j['count'] = j['count'] + 1

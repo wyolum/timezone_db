@@ -25,7 +25,7 @@ except:
 def get_localips():
   sql = '''
   SELECT localip, dev_type 
-  FROM IP_Timezone  
+  FROM Device  
   WHERE ip="%s" AND localip != "NA" AND last_update > %s 
   ORDER BY localip''' % (ip, int(time.time() - 8 * 86400))
   cur = db.execute(sql)
