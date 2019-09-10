@@ -25,7 +25,8 @@ except:
   macaddress = 'made:up:mac:address'
   fields = {'localip':localip, 'macaddress':macaddress} 
 
-tz = timezone_db.select(ip, macaddress)
+localip = "192.168.1.123"
+tz = timezone_db.select(ip, localip, macaddress, 'CLOCKIOT')
 tz = 'TIMEZONE'
 body = '''Hello World, how are things at %s
 
