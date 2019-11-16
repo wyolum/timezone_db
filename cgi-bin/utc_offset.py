@@ -8,8 +8,11 @@ import cgitb
 cgitb.enable()
 
 try:
-  ip = cgi.escape(os.environ["REMOTE_ADDR"]) 
+  ip = cgi.escape(os.environ["REMOTE_ADDR"])
+  if ip == "127.0.0.1":
+    ip = '4.3.2.1' ## for local testing
 except:
+  ## for local testing
   ip = '1.2.3.4'
   
 f = cgi.FieldStorage()

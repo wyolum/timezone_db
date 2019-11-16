@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from __future__ import print_function
 import sqlite3
-import urllib
+from urllib.request import urlopen
 import os
 import database
 from database import Column, String, Float, Integer
@@ -65,7 +65,7 @@ def create_db():
 
 def lookup(ip, localip, macaddress, dev_type):
     url = "https://ipapi.co/%s/json" % ip
-    s = urllib.urlopen(url).read()
+    s = urlopen(url).read()
     out = json.loads(s)
     out['last_update'] = int(time.time())
     out['macaddress'] = macaddress
