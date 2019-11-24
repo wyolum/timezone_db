@@ -3,16 +3,13 @@ from __future__ import print_function
 import cgi
 import os
 import urllib
-import timezone_db
+import timezone_db3 as timezone_db
 import cgitb
-cgitb.enable()
+# cgitb.enable()
 
 try:
-  ip = cgi.escape(os.environ["REMOTE_ADDR"])
-  if ip == "127.0.0.1":
-    ip = '4.3.2.1' ## for local testing
+  ip = cgi.escape(os.environ["REMOTE_ADDR"]) 
 except:
-  ## for local testing
   ip = '1.2.3.4'
   
 f = cgi.FieldStorage()
@@ -29,11 +26,13 @@ else:
   macaddress = 'NA'
 if 'dev_type' in fields:
   dev_type = fields['dev_type']
+elif 'type' in fields:
+  dev_type = fields['type']
 else:
   dev_type = 'Not given'
 
 tz = timezone_db.select(ip, localip, macaddress, dev_type)
-
+print ("tz:", tz)
 def format_utc_offset(x):
     '''add "+" back into utc_offset'''
     if type(x) == type(0):

@@ -82,7 +82,10 @@ class Column:
         kw = ''
         for k in self.kw:
             if self.kw[k]:
-                kw = kw + ' ' + '%s' % (k.upper())
+                if type(self.kw[k]) == type(""):
+                    kw = kw + ' ' + '%s %s' % (k.upper(), self.kw[k])
+                else:
+                    kw = kw + ' ' + '%s' % (k.upper())
         return '%s %s %s' % (self.name, self.type.name, kw)
     
 class DBType:
@@ -103,3 +106,6 @@ class Boolean(DBType):
 class Text(DBType):
     def __init__(self):
         DBType.__init__(self, 'TEXT')
+class TimeStamp(DBType):
+    def __init__(self):
+        DBType.__init__(self, 'TIMESTAMP')

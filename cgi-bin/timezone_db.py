@@ -1,7 +1,11 @@
 #!/usr/bin/python
 from __future__ import print_function
 import sqlite3
-from urllib.request import urlopen
+import sys
+if sys.version_info[0] > 2:
+    from urllib.request import urlopen
+else:
+    from urllib import urlopen
 import os
 import database
 from database import Column, String, Float, Integer
@@ -53,6 +57,20 @@ Device = database.Table('Device', db,
                         Column('dev_type',String())
 )
 
+class RPIIPAddr(database.Table):
+    def __init__(self):
+          self.name = 'RPI_IP_ADDR'
+          database.Table.__init__(self, self.name,  db,
+                                  Column('sqltime', database.TimeStamp(), default="CURRENT_TIMESTAMP"),
+                                  Column('IP_Addr', database.String()))
+    def latest(self):
+        sql = '''\
+SELECT IP_Addr FROM %s ORDER BY sqltime DESC LIMIT 1
+''' % self.name
+        cursor = self.db.execute(sql)
+        return cursor.fetchone()[0]
+RPI_IP_Addr = RPIIPAddr()
+
 def create_db():
     tz_idx_cols = ['timezone']
     Timezone.create()
@@ -61,11 +79,16 @@ def create_db():
     dev_idx_cols = ['ip', 'macaddress']
     Device.create()
     Device.create_index(dev_idx_cols, unique=True)
+
+    RPI_IP_Addr.create()
     db.commit()
 
 def lookup(ip, localip, macaddress, dev_type):
     url = "https://ipapi.co/%s/json" % ip
-    s = urlopen(url).read()
+    rpi_ip = RPI_IP_Addr.latest()
+    url = "http://%s/cgi-bin/ipapi.py?globalip=%s" % (rpi_ip, ip)
+    print(url)
+    s = urlopen(url).read().decode('utf-8')
     out = json.loads(s)
     out['last_update'] = int(time.time())
     out['macaddress'] = macaddress
