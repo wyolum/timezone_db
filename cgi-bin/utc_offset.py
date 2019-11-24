@@ -3,7 +3,7 @@ from __future__ import print_function
 import cgi
 import os
 import urllib
-import timezone_db3 as timezone_db
+import timezone_db
 import cgitb
 # cgitb.enable()
 
