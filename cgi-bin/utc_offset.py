@@ -1,11 +1,14 @@
+#!/opt/rh/python27/root/usr/bin/python
 #!/usr/bin/python
 from __future__ import print_function
+
+import sys
 import cgi
 import os
 import urllib
 import timezone_db
 import cgitb
-# cgitb.enable()
+cgitb.enable()
 
 try:
   ip = cgi.escape(os.environ["REMOTE_ADDR"]) 
@@ -26,13 +29,15 @@ else:
   macaddress = 'NA'
 if 'dev_type' in fields:
   dev_type = fields['dev_type']
-elif 'type' in fields:
-  dev_type = fields['type']
 else:
   dev_type = 'Not given'
 
 tz = timezone_db.select(ip, localip, macaddress, dev_type)
-print ("tz:", tz)
+# print ("tz:", tz)
+version = sys.version_info
+major, minor, micro = version[:3]
+py_version = "Python%d.%d.%d" %(major, minor, micro)
+tz["python version"] = py_version
 def format_utc_offset(x):
     '''add "+" back into utc_offset'''
     if type(x) == type(0):

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from __future__ import print_function
 import sqlite3
 import sys
@@ -13,6 +12,9 @@ import json
 import time
 from datetime import datetime, timedelta
 import cgi
+import ssl
+
+ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
 try:
     ip = cgi.escape(os.environ["REMOTE_ADDR"])
@@ -85,14 +87,17 @@ def create_db():
 
 def lookup(ip, localip, macaddress, dev_type):
     url = "https://ipapi.co/%s/json" % ip
-    rpi_ip = RPI_IP_Addr.latest()
-    url = "http://%s/cgi-bin/ipapi.py?globalip=%s" % (rpi_ip, ip)
-    print(url)
+    s = urlopen(url, context=ctx).read().decode('utf-8')
+    # rpi_ip = RPI_IP_Addr.latest()
+    # url = "http://%s/cgi-bin/ipapi.py?globalip=%s" % (rpi_ip, ip)
+    # print(url)
     s = urlopen(url).read().decode('utf-8')
     out = json.loads(s)
+    out['source'] = url
     out['last_update'] = int(time.time())
     out['macaddress'] = macaddress
     keep = [col.name for col in Timezone.columns] + [col.name for col in Device.columns]
+    keep.append("source")
     toss = []
     for name in out:
         if name not in keep:
@@ -125,6 +130,7 @@ WHERE
         names = [l[0] for l in cur.description]
         out = rows[0]
         out = dict(zip(names, out))
+        out['source'] = 'cache'
         update(ip, localip, macaddress, dev_type, out)
     else:
         raise ValueError("More than one (%d) record returned" % cur.rowcount)

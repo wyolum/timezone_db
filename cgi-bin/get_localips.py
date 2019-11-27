@@ -1,3 +1,4 @@
+#!/opt/rh/python27/root/usr/bin/python
 #!/usr/bin/python
 from __future__ import print_function
 import cgi
@@ -26,7 +27,12 @@ def get_localips():
   sql = '''
   SELECT localip, dev_type 
   FROM Device  
-  WHERE ip="%s" AND localip != "NA"
+  WHERE ip="%s" AND localip != "NA" AND last_update > %s 
+  ORDER BY localip''' % (ip, int(time.time() - 8 * 86400))
+  sql = '''
+  SELECT localip, dev_type 
+  FROM Device  
+  WHERE ip="%s" AND localip != "NA"  
   ORDER BY localip''' % (ip, )
   cur = db.execute(sql)
   return [{"localip":l.decode('utf-8'), 'dev_type':t.decode('utf-8')} for l,t in cur.fetchall()]
