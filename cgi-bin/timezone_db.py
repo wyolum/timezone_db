@@ -38,14 +38,16 @@ DB_FN = 'timezone.db'
 db = sqlite3.connect(DB_FN)
 
 Timezone = database.Table('Timezone', db,
-                           Column('last_update', Integer()),
-                           Column('tz_count', Integer()),
-                           Column('timezone', String()),
-                           Column('utc_offset', String()),
-                           )
+                          Column('first_update', Integer()),
+                          Column('last_update', Integer()),
+                          Column('tz_count', Integer()),
+                          Column('timezone', String()),
+                          Column('utc_offset', String()),
+)
 
 Device = database.Table('Device', db,
                         Column('timezone_rowid', Integer()),
+                        Column('first_update', Integer()),
                         Column('last_update', Integer()),
                         Column('count', Integer()),
                         Column('ip',String()),
@@ -107,7 +109,6 @@ def lookup(ip, localip, macaddress, dev_type):
     return out
     
 def select(ip, localip, macaddress, dev_type):
-    # print("select(%s,%s)" % (ip, macaddress))
     columns = ['Timezone.' + col.name for col in Timezone.columns] + ['Device.' + col.name for col in Device.columns]
     columns = ','.join(columns)
     sql = '''\
@@ -120,6 +121,7 @@ INNER JOIN
 WHERE
   Device.ip="%s" AND Device.macaddress="%s"
 ''' % (columns, ip, macaddress)
+    print(columns)
     cur = db.execute(sql)
     rows = cur.fetchall()
     rowcount = len(rows)
@@ -148,9 +150,9 @@ def insert(ip, localip, macaddress, dev_type, json_data):
         if len(data) < 1:
             ### insert new timezone
             sql = '''\
-            INSERT INTO Timezone (last_update, tz_count, timezone, utc_offset)
+            INSERT INTO Timezone (first_update, last_update, tz_count, timezone, utc_offset)
             VALUES (%d, 0, "%s", "%s")
-            ''' % (now, json_data['timezone'], json_data['utc_offset'])
+            ''' % (now, now, json_data['timezone'], json_data['utc_offset'])
             cur = db.execute(sql)
             rowid = cur.lastrowid
             db.commit()
@@ -175,9 +177,9 @@ def insert(ip, localip, macaddress, dev_type, json_data):
         if j['longitude'] is None:
             j['longitude'] = 0
         sql = '''\
-INSERT INTO Device (timezone_rowid, last_update, count, ip, latitude, longitude, city, region, country_name, localip, macaddress, dev_type)
+INSERT INTO Device (timezone_rowid, first_update, last_update, count, ip, latitude, longitude, city, region, country_name, localip, macaddress, dev_type)
 VALUES (
-%(timezone_rowid)d, %(last_update)d, %(count)d, "%(ip)s", %(latitude)f, %(longitude)f,"%(city)s", "%(region)s", "%(country_name)s", 
+%(timezone_rowid)d, %(last_update)d, %(last_update)d, %(count)d, "%(ip)s", %(latitude)f, %(longitude)f,"%(city)s", "%(region)s", "%(country_name)s", 
 "%(localip)s","%(macaddress)s","%(dev_type)s")
 ''' % j
         try:
@@ -210,11 +212,12 @@ SET tz_count=tz_count+1, last_update=%s, utc_offset="%s"
 WHERE Timezone.rowid=%d''' % (j['last_update'], j['utc_offset'], j['timezone_rowid'])
     db.execute(sql)
     
+    now = int(time.time())
     sql = '''\
 UPDATE Device 
-SET count=count+1, localip="%s", dev_type="%s", latitude=%.4f, longitude=%.4f, city="%s", region="%s", country_name="%s"
+SET count=count+1, last_update=%d, localip="%s", dev_type="%s", latitude=%.4f, longitude=%.4f, city="%s", region="%s", country_name="%s"
 WHERE ip="%s" AND macaddress="%s"
-''' % (localip, dev_type, j['latitude'], j['longitude'], j['city'], j['region'], j['country_name'], j['ip'], j['macaddress'])
+''' % (now, localip, dev_type, j['latitude'], j['longitude'], j['city'], j['region'], j['country_name'], j['ip'], j['macaddress'])
     db.execute(sql)
     # print(sql)
     db.commit()

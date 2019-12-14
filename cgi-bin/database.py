@@ -78,6 +78,10 @@ class Column:
         self.name = name
         self.type = type
         self.kw = kw
+        if 'primary_key' in kw:
+            kw['primary key'] = kw['primary_key']
+            del kw['primary_key']
+            
     def __str__(self):
         kw = ''
         for k in self.kw:
