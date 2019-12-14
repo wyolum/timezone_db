@@ -121,7 +121,6 @@ INNER JOIN
 WHERE
   Device.ip="%s" AND Device.macaddress="%s"
 ''' % (columns, ip, macaddress)
-    print(columns)
     cur = db.execute(sql)
     rows = cur.fetchall()
     rowcount = len(rows)

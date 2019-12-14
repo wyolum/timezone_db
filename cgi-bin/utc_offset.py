@@ -62,4 +62,3 @@ for i, k in enumerate(keys):
         print()
  # print ('    localip: "%s"' % fields['localip'])
 print('}')
-
