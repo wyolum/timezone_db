@@ -1,5 +1,5 @@
-#!/usr/bin/python
 #!/opt/rh/python27/root/usr/bin/python
+#!/usr/bin/python
 from __future__ import print_function
 import time
 import sys
@@ -30,7 +30,11 @@ else:
 if 'dev_type' in fields:
   dev_type = fields['dev_type']
 else:
+  raise Exception("Unrecognized request.")
   dev_type = 'Not given'
+
+print ("Content-type: text/json\n\n") ### start responce immediatly to prevent timeout errors?
+print('{')
 
 tz = timezone_db.select(ip, localip, macaddress, dev_type)
 # print ("tz:", tz)
@@ -47,9 +51,6 @@ def format_utc_offset(x):
         out = x
     return out
 
-print ("Content-type: text/json\n\n")
-print('{')
-
 keys = tz.keys()
 for i, k in enumerate(keys):
     v = tz[k]
@@ -62,3 +63,4 @@ for i, k in enumerate(keys):
         print()
  # print ('    localip: "%s"' % fields['localip'])
 print('}')
+
