@@ -14,7 +14,8 @@ try:
   ip = cgi.escape(os.environ["REMOTE_ADDR"]) 
 except:
   ip = '108.56.138.39'
-  
+  ip = '222.11.1.1' # japan
+  ip = '59.102.53.105'# victoria, Aus
 f = cgi.FieldStorage()
 fields = {}
 for k in f:
@@ -33,7 +34,7 @@ else:
   raise Exception("Unrecognized request.")
   dev_type = 'Not given'
 
-print ("Content-type: text/json\n\n") ### start responce immediatly to prevent timeout errors?
+print ("Content-type: text/json\n\n")
 print('{')
 
 tz = timezone_db.select(ip, localip, macaddress, dev_type)

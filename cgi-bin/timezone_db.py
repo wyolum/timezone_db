@@ -13,6 +13,7 @@ import time
 from datetime import datetime, timedelta
 import cgi
 import ssl
+import credentials
 
 ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
 
@@ -88,14 +89,14 @@ def create_db():
     db.commit()
 
 def lookup(ip, localip, macaddress, dev_type):
-    url = "https://ipapi.co/%s/json" % ip
+    url = "https://ipapi.co/%s/json?key=%s" % (ip, credentials.keys['ipapi'])
     s = urlopen(url, context=ctx).read().decode('utf-8')
     # rpi_ip = RPI_IP_Addr.latest()
     # url = "http://%s/cgi-bin/ipapi.py?globalip=%s" % (rpi_ip, ip)
     # print(url)
     s = urlopen(url).read().decode('utf-8')
     out = json.loads(s)
-    out['source'] = url
+    out['source'] = url.replace(credentials.keys['ipapi'], "<hidden>")
     out['last_update'] = int(time.time())
     out['macaddress'] = macaddress
     keep = [col.name for col in Timezone.columns] + [col.name for col in Device.columns]
@@ -150,8 +151,8 @@ def insert(ip, localip, macaddress, dev_type, json_data):
             ### insert new timezone
             sql = '''\
             INSERT INTO Timezone (first_update, last_update, tz_count, timezone, utc_offset)
-            VALUES (%d, 0, "%s", "%s")
-            ''' % (now, now, json_data['timezone'], json_data['utc_offset'])
+            VALUES (%d, 0, 0, "%s", "%s")
+            ''' % (now, json_data['timezone'], json_data['utc_offset'])
             cur = db.execute(sql)
             rowid = cur.lastrowid
             db.commit()
@@ -175,6 +176,13 @@ def insert(ip, localip, macaddress, dev_type, json_data):
             j['latitude'] = 0
         if j['longitude'] is None:
             j['longitude'] = 0
+        try:
+            float(j['latitude'])
+            float(j['longitude'])
+        except:
+            j['longitude'] = 0
+            j['latitude'] = 0
+        
         sql = '''\
 INSERT INTO Device (timezone_rowid, first_update, last_update, count, ip, latitude, longitude, city, region, country_name, localip, macaddress, dev_type)
 VALUES (
